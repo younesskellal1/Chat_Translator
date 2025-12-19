@@ -1,0 +1,114 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat Translator</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', system-ui, sans-serif; }
+      .hero {
+        background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
+        color: #fff;
+        padding: 36px 32px 24px 32px;
+        border-radius: 0 0 24px 24px;
+        box-shadow: 0 4px 24px rgba(58,134,255,0.08);
+        margin-bottom: 24px;
+        text-align: center;
+      }
+      .hero h1 { font-size: 2.5rem; margin: 0 0 10px; font-weight: 700; letter-spacing: -1px; }
+      .hero p { font-size: 1.2rem; margin: 0; font-weight: 400; }
+      .card {
+        background: var(--bg-secondary);
+        border-radius: 18px;
+        box-shadow: 0 2px 12px rgba(44,62,80,0.07);
+        padding: 32px 24px;
+        margin-bottom: 24px;
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .controls { margin-bottom: 18px; }
+      .chat { min-height: 320px; }
+      @media (max-width: 900px) {
+        .card { padding: 18px 6px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <button id="new-chat" class="new-chat-btn">+ New chat</button>
+          <div class="sidebar-actions">
+            <button id="show-active" class="toggle active" data-filter="active">Active</button>
+            <button id="show-archived" class="toggle" data-filter="archived">Archived</button>
+          </div>
+        </div>
+        <ul id="chats" class="chat-list"></ul>
+        <div class="sidebar-user">
+          <div class="user-meta">
+            <div class="avatar">{{ (user.name[0] if user.name else 'U')|upper }}</div>
+            <div class="user-text">
+              <div class="user-name">{{ user.name }}</div>
+              <div class="user-email">{{ user.email }}</div>
+            </div>
+          </div>
+          <a class="btn logout" href="/logout">Logout</a>
+        </div>
+      </aside>
+
+      <main class="container">
+        <div class="hero">
+          <h1>🌐 Chat Translator & OCR</h1>
+          <p>Translate, transcribe, and chat in any language. Upload images for instant OCR and translation. Powered by AI.</p>
+        </div>
+        <div class="card">
+          <div class="controls">
+            <div class="controls-left">
+              <label>
+                Source
+                <select id="source">
+                  {% for lang in languages %}
+                  <option value="{{lang}}">{{lang.title()}}</option>
+                  {% endfor %}
+                </select>
+              </label>
+              <label>
+                Target
+                <select id="target">
+                  {% for lang in languages %}
+                  <option value="{{lang}}" {% if lang=="english" %}selected{% endif %}>{{lang.title()}}</option>
+                  {% endfor %}
+                </select>
+              </label>
+            </div>
+            <button id="theme-toggle" class="theme-toggle" title="Toggle theme">🌙</button>
+          </div>
+
+          <div id="chat" class="chat"></div>
+
+          <form id="composer" class="composer">
+            <input id="file-input" type="file" accept=".txt,.md,.csv,.srt,.vtt,.json,.xml,.html" hidden />
+            <input id="image-input" type="file" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp" hidden />
+            <button type="button" id="file-btn" title="Add file">📎</button>
+            <button type="button" id="image-btn" title="Add image (OCR)">🖼️</button>
+            <input id="message" type="text" placeholder="Type text to translate..." autocomplete="off" />
+            <button type="button" id="mic-btn" title="Speak">🎤</button>
+            <button type="submit">Send</button>
+            <label class="autospeak">
+              <input type="checkbox" id="auto-speak" /> Auto speak
+            </label>
+          </form>
+        </div>
+      </main>
+    </div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
+
+

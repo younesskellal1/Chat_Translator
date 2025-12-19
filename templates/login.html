@@ -1,0 +1,46 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login | Chat Translator</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', system-ui, sans-serif; }
+      .auth-card { box-shadow: 0 4px 24px rgba(58,134,255,0.10); border-radius: 18px; }
+      .auth-card h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 8px; }
+      .auth-form input { font-size: 1.1rem; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-tertiary); color: var(--text-primary); margin-bottom: 8px; }
+      .auth-form input:focus { outline: 2px solid var(--accent-blue); }
+      .auth-actions { display: flex; gap: 10px; align-items: center; margin-top: 8px; }
+      .btn.primary { background: var(--accent-blue); border-color: var(--accent-blue); color: #fff; font-weight: 600; }
+      .btn.primary:hover { background: #2f6fd1; }
+      .muted { color: var(--text-secondary); margin-top: 8px; }
+      .auth-card .icon { font-size: 2.2rem; margin-bottom: 10px; display: block; text-align: center; }
+    </style>
+  </head>
+  <body class="auth-layout">
+    <div class="auth-card">
+      <span class="icon">🔐</span>
+      <h1>Log in</h1>
+      <p class="muted">Welcome back! Enter your credentials to continue.</p>
+      <form method="post" action="/login" class="auth-form">
+        <input type="email" name="email" placeholder="Email" required autocomplete="username" />
+        <input type="password" name="password" placeholder="Password" required autocomplete="current-password" />
+        <div class="auth-actions">
+          <button type="submit" class="btn primary">Log in</button>
+          <a class="link" href="/welcome">Back to welcome</a>
+        </div>
+      </form>
+      {% if error %}
+      <p class="muted" style="color: var(--accent-orange); font-weight: 600;">{{ error }}</p>
+      {% endif %}
+      <p class="muted">Don't have an account? <a class="link" href="/signup">Sign up</a></p>
+    </div>
+  </body>
+</html>
+
+

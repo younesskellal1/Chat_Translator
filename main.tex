@@ -1,0 +1,177 @@
+% main.tex
+\documentclass[11pt,a4paper]{article}
+
+% Encodage et langue
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[french]{babel}
+
+% Mise en page
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{microtype}
+
+% Maths, figures, tables
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{siunitx}
+
+% Hyperliens
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+% Bibliographie
+\usepackage[backend=biber,style=authoryear]{biblatex}
+\addbibresource{references.bib}
+
+% Codes et listings (si besoin)
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\small,breaklines=true}
+
+% Commandes utiles
+\newcommand{\projectname}{DL-Translate}
+\newcommand{\todo}[1]{{\color{red}[TODO: #1]}}
+
+\title{\projectname: Plateforme Web pour OCR multilingue, traduction neuronale et synthèse vocale}
+\author{Prénom Nom\thanks{Affiliation 1, email@example.com} \and Autre Auteur\thanks{Affiliation 2}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Nous présentons \projectname, une plateforme Web modulaire combinant: (i) l'extraction de texte depuis des images (OCR), (ii) la traduction neuronale multilingue (NLLB-200, M2M-100, Marian) et (iii) la synthèse vocale par plusieurs backends (gTTS, edge-tts, pyttsx3). Le système vise à faciliter la traduction et la restitution audio de contenus textuels pour des usages de productivité et d'accessibilité. Nous décrivons l'architecture logicielle, les choix modèles, le pipeline expérimental, et fournissons un modèle d'évaluation reproduisible. Des exemples d'intégration et des résultats de validation (placeholders) sont fournis pour illustrer les performances et les cas limites.
+\end{abstract}
+
+\paragraph{Mots-clés} OCR, traduction neuronale, synthèse vocale, NLLB-200, M2M-100, Marian, Flask
+
+\section{Introduction}
+La traduction automatique et les technologies de parole sont désormais des composants centraux pour rendre l'information accessible dans plusieurs langues. Dans ce travail nous présentons \projectname, une application Web développée pour permettre aux utilisateurs d'extraire du texte d'images, d'obtenir des traductions de haute qualité et d'entendre le texte traduit via synthèse vocale. Le projet regroupe des composants open-source performants (Tesseract, Transformers) et fournit une couche d'orchestration (Flask + SQLite) pour la persistance et l'interface utilisateur.
+
+Les contributions principales sont:
+\begin{itemize}
+  \item Une architecture modulaire intégrant OCR, traduction et TTS, prête à être étendue.
+  \item Un pipeline de sélection de modèle (NLLB pour arabe/anglais, M2M-100 pour paires courantes, Marian comme fallback) et une métrique de confiance par traduction.
+  \item Un module TTS à plusieurs backends avec stratégie de fallback et sélection de voix.
+  \item Un jeu d'expériences reproductibles et un template LaTeX/documentation pour faciliter la rédaction des résultats.
+\end{itemize}
+
+\section{Travaux connexes}
+Les approches modernes de traduction neuronale incluent les modèles massifs multilingues tels que NLLB-200 \cite{fan2022beyond}, M2M-100 \cite{aharoni2020massively} et les modèles ciblés Marian\cite{berg2019marian}. Pour l'OCR, Tesseract reste une solution robuste open-source \cite{smith2007overview}. Les systèmes combinant OCR+MT+TTS ont été explorés pour la traduction instantanée de documents et d'images \cite{grishman2018multimodal}.
+
+\section{Architecture du système}
+\label{sec:architecture}
+La Figure~\ref{fig:arch} illustre l'architecture globale: une interface Web (HTML/JS) communique avec un serveur Flask (\texttt{app.py}) qui orchestre les composants: \texttt{routes.py} expose les endpoints, \texttt{ocr.py} réalise l'extraction, \texttt{translation.py} sélectionne et exécute le modèle, \texttt{tts.py} synthétise l'audio. Les données d'utilisateur et d'historique sont persistées dans une base SQLite via \texttt{models.py}.
+
+\begin{figure}[ht]
+  \centering
+  % Remplacez par figures/architecture.pdf généré depuis un outil de dessin
+  \fbox{\parbox[c][6cm][c]{0.8\linewidth}{\centering Figure d'architecture (placer \texttt{figures/architecture.pdf})}}
+  \caption{Architecture modulaire: UI → Flask routes → (OCR, Traduction, TTS) → Stockage (SQLite).}
+  \label{fig:arch}
+\end{figure}
+
+\section{Méthode}
+\subsection{OCR}
+Le module OCR repose sur Tesseract via le wrapper \texttt{pytesseract} (\texttt{ocr.py}). Avant d'appeler Tesseract, l'image est normalisée via Pillow; la fonction principale est \texttt{extract_text_from_image(image_bytes)} qui renvoie le texte brut. Une fonction heuristique détermine si le texte contient des caractères arabes afin d'orienter le choix du modèle de traduction.
+
+\subsection{Traduction neuronale}
+Le module \texttt{translation.py} encapsule trois familles de modèles:
+\begin{itemize}
+  \item NLLB-200 (distillé) pour les paires arabe/anglais lorsque disponible, via \texttt{facebook/nllb-200-distilled-600M} \cite{fan2022beyond}.
+  \item M2M-100 (Facebook) pour des paires multilingues de haute qualité \cite{aharoni2020massively}.
+  \item Marian (Helsinki-NLP) comme fallback pour paires supportées par les modèles OPUS-MT \cite{tiedemann2012parallel}.
+\end{itemize}
+
+Le système charge les modèles avec mise en cache pour éviter les rechargements répétés. Une fonction \texttt{translate_with_score(text, src, tgt)} renvoie la traduction et un score de confiance heuristique basé sur le modèle utilisé, la longueur du texte et la paire de langues.
+
+\subsection{Synthèse vocale}
+Le module TTS (\texttt{tts.py}) implémente une stratégie de fallback: d'abord gTTS (Google, MP3), ensuite \texttt{edge-tts} (voix neurales), puis \texttt{pyttsx3} en local (WAV). Le code inclut un mapping de voix par locale et un verrou pour éviter les conflits sur le moteur local.
+
+\section{Jeux de données et protocole d'évaluation}
+Le projet étant une application, l'évaluation inclut deux volets:
+\begin{enumerate}
+  \item Qualité de la traduction automatique: mesurer BLEU, chrF, et une métrique de confiance. On recommande d'évaluer sur des jeux publics pour chaque paire (ex: WMT pour anglais/français) ou sur un jeu d'images annotées (OCR+GT).
+  \item Robustesse de l'OCR: mesurer exactitude des caractères (CER) et des mots (WER) sur images de test (divers niveaux de bruit et résolutions).
+\end{enumerate}
+
+Pour la reproductibilité, nous proposons d'utiliser des splits train/val/test standard et d'enregistrer la configuration (version des modèles, seeds, batch size) dans un fichier `experiments/config.json`.
+
+\section{Expériences}
+\label{sec:experiments}
+Cette section donne un exemple d'expérience à reproduire avec le dépôt. Les chiffres ci-dessous sont des exemples indicatifs — remplacez-les par vos mesures réelles.
+
+\subsection{Protocole}
+- Traductions évaluées sur 1k phrases par paire de langue.\
+- Calcul de BLEU (sacré) et chrF.\
+- Pour l'OCR, 500 images annotées avec texte de référence.
+
+\subsection{Résultats (exemples)}
+\begin{table}[ht]
+  \centering
+  \caption{Exemples de résultats de traduction (à remplacer par vos mesures).}
+  \label{tab:results}
+  \begin{tabular}{lccc}
+    \toprule
+    Paire & Méthode & BLEU & chrF \\
+    \midrule
+    English→French & M2M-100 & 35.2 & 0.62 \\
+    English→Arabic & NLLB-200 & 28.5 & 0.55 \\
+    French→English & Marian (opus) & 30.1 & 0.58 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \caption{Exemple de performances OCR (exemple).}
+  \begin{tabular}{lcc}
+    \toprule
+    Condition & CER (\%) & WER (\%) \\
+    \midrule
+    Clean (scan lisible) & 1.2 & 3.5 \\
+    Photo angle faible & 4.8 & 12.1 \\
+    Faible résolution & 10.5 & 28.3 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Analyse qualitatives}
+Présentez des exemples extraits du site: texte source extrait d'image, traduction et sortie TTS. Discutez des cas d'échec (mauvaise segmentation OCR, erreurs de romanisation, voix inadaptée pour la langue cible).
+
+\section{Discussion}
+Nous discutons des limites pratiques: dépendance aux modèles distants (si téléchargement nécessaire), sensibilité de l'OCR à la qualité d'image, et la variation de la qualité TTS selon le backend. Les décisions d'ingénierie (caching des modèles, limites d'upload à 5MB, fallback multi-backend) sont prises pour maximiser la disponibilité sur le poste client.
+
+\section{Conclusion et travaux futurs}
+Nous avons présenté \projectname, qui assemble OCR, traduction et TTS dans une application Web modulaire. Les travaux futurs incluent:
+\begin{itemize}
+  \item Intégration d'une évaluation utilisateur (études qualitatives) et collection d'un corpus d'images annotées locale.
+  \item Optimisation embarquée (quantification, compilation) pour accélérer l'inférence en local.
+  \item Ajout d'un module de synthèse vocale multilingue offline de haute qualité.
+\end{itemize}
+
+\section*{Remerciements}
+Remerciements aux contributeurs et aux mainteneurs des bibliothèques utilisées.
+
+\printbibliography
+
+\appendix
+\section{Détails d'implémentation}
+\subsection{Endpoints clés}
+Un extrait des routes principales (simplifié):
+\begin{lstlisting}
+POST /translate  -> translate_with_score(text, source, target)
+POST /ocr        -> extract_text_from_image(file) + optional translate
+POST /tts        -> synthesize_tts(text, lang)
+\end{lstlisting}
+
+\subsection{Exemple de snippet (extraction OCR)}
+\begin{lstlisting}
+from ocr import extract_text_from_image
+text = extract_text_from_image(image_bytes)
+\end{lstlisting}
+
+\end{document}

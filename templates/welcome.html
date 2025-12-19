@@ -1,0 +1,47 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Welcome | Chat Translator</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: 'Inter', system-ui, sans-serif; }
+      .welcome-hero {
+        background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-teal) 100%);
+        color: #fff;
+        border-radius: 18px;
+        box-shadow: 0 4px 24px rgba(58,134,255,0.10);
+        padding: 48px 32px 36px 32px;
+        margin-bottom: 32px;
+        text-align: center;
+      }
+      .welcome-hero h1 { font-size: 2.8rem; margin: 0 0 12px; font-weight: 700; letter-spacing: -1px; }
+      .welcome-hero p { font-size: 1.25rem; margin: 0 0 18px; font-weight: 400; }
+      .welcome-hero .emoji { font-size: 2.2rem; margin-bottom: 10px; display: block; }
+      .welcome-actions { display: flex; gap: 18px; justify-content: center; margin-top: 24px; }
+      .welcome-actions .btn { font-size: 1.1rem; padding: 14px 28px; border-radius: 10px; font-weight: 600; }
+      @media (max-width: 600px) {
+        .welcome-hero { padding: 24px 6px 18px 6px; }
+        .welcome-hero h1 { font-size: 2rem; }
+      }
+    </style>
+  </head>
+  <body class="auth-layout" style="background: var(--bg-primary);">
+    <div class="welcome-hero">
+      <span class="emoji">🌍✨</span>
+      <h1>Welcome to Chat Translator</h1>
+      <p class="lead">Effortlessly translate, chat, and extract text from images in any language.<br>Experience seamless communication with AI-powered OCR and voice features.</p>
+      <div class="welcome-actions">
+        <a class="btn primary" href="/login">Log in</a>
+        <a class="btn" href="/signup">Sign up</a>
+      </div>
+    </div>
+  </body>
+</html>
+
+

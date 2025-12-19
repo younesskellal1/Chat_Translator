@@ -1,0 +1,16 @@
+flask>=3.0.0
+transformers>=4.44.0
+torch>=2.1.0; platform_system != 'Windows' or platform_machine != 'AMD64'  # optional CPU/GPU
+torch==2.3.1+cpu; platform_system == 'Windows' and platform_machine == 'AMD64' --extra-index-url https://download.pytorch.org/whl/cpu
+huggingface_hub>=0.23.0
+sentencepiece>=0.1.99
+sacremoses>=0.0.53
+
+
+pyttsx3>=2.90
+edge-tts>=6.1.12
+gTTS>=2.5.1
+SQLAlchemy>=2.0.23
+pytesseract>=0.3.13
+Pillow>=10.0.0
+

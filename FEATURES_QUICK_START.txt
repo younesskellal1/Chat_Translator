@@ -1,0 +1,65 @@
+# Quick Start Guide - New Features
+
+## 🌙 Theme Toggle
+- **Button:** Top-right corner (🌙/☀️)
+- **Auto-saved:** Yes (localStorage)
+- **No setup needed** ✓
+
+## 📷 Image OCR
+**Setup Required:**
+```bash
+# Windows
+Download & install: https://github.com/UB-Mannheim/tesseract/wiki
+
+# Mac
+brew install tesseract
+
+# Linux
+apt install tesseract-ocr
+```
+
+**Usage:**
+1. Click 🖼️ button in chat
+2. Select image
+3. Text extracts + auto-translates
+4. Click ▶ to speak
+
+## 📊 Quality Score
+- **Automatic** - Shows with every translation
+- **Color coded:**
+  - 🟢 90%+ = Trust it
+  - 🟡 75-89% = Probably good
+  - 🔴 <75% = Use with caution
+
+## Requirements Update
+```bash
+pip install -r requirements.txt
+```
+
+New packages:
+- `pytesseract>=0.3.13`
+- `Pillow>=10.0.0`
+
+---
+
+## Troubleshooting
+
+**OCR not working?**
+→ Tesseract not installed (see setup above)
+
+**Images won't upload?**
+→ Only supports: JPG, PNG, GIF, BMP, WebP
+
+**Low confidence scores?**
+→ Using less common language pairs (score will be lower)
+
+**Theme not persisting?**
+→ Check browser's localStorage is enabled
+
+---
+
+## Ready to Go! 🚀
+```bash
+python app.py
+```
+Visit http://localhost:5000
